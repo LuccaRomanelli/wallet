@@ -77,56 +77,65 @@ http://localhost
 
 | Método | Endpoint                  | Descrição                  |
 |--------|---------------------------|----------------------------|
-| POST   | `/api/users`              | Criar usuário comum        |
-| POST   | `/api/stores`             | Criar loja (merchant)      |
+| POST   | `/api/accounts`           | Criar conta (user/merchant)|
 | POST   | `/api/transfer`           | Realizar transferência     |
-| GET    | `/api/users/{id}/balance` | Consultar saldo do usuário |
+| GET    | `/api/users/{id}/balance` | Consultar saldo da conta   |
 
 ## Exemplos de Uso
 
-### Criar Usuário
+### Criar Conta (Usuário Comum)
 
 ```bash
-curl -X POST http://localhost/api/users \
+curl -X POST http://localhost/api/accounts \
   -H "Content-Type: application/json" \
   -d '{
     "name": "João Silva",
     "email": "joao@email.com",
     "password": "senha12345",
     "document": "12345678901",
-    "start_money": 100.00
+    "start_money": 100.00,
+    "user_type": "common"
   }'
 ```
 
 **Resposta:**
 ```json
 {
-  "id": 1,
-  "name": "João Silva",
-  "email": "joao@email.com"
+  "message": "Account created successfully.",
+  "data": {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "user_type": "common"
+  }
 }
 ```
 
-### Criar Loja (Merchant)
+### Criar Conta (Loja/Merchant)
 
 ```bash
-curl -X POST http://localhost/api/stores \
+curl -X POST http://localhost/api/accounts \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Loja do Pedro",
     "email": "loja@email.com",
     "password": "senha12345",
     "document": "12345678000199",
-    "start_money": 0.00
+    "start_money": 0.00,
+    "user_type": "merchant"
   }'
 ```
 
 **Resposta:**
 ```json
 {
-  "id": 2,
-  "name": "Loja do Pedro",
-  "email": "loja@email.com"
+  "message": "Account created successfully.",
+  "data": {
+    "id": 2,
+    "name": "Loja do Pedro",
+    "email": "loja@email.com",
+    "user_type": "merchant"
+  }
 }
 ```
 
@@ -173,6 +182,33 @@ curl -X GET http://localhost/api/users/1/balance
 }
 ```
 
+## Postman
+
+Uma coleção do Postman está disponível para facilitar os testes da API.
+
+### Importar Coleção
+
+1. Abra o Postman
+2. Clique em **Import** (ou `Ctrl+O`)
+3. Selecione o arquivo `postman/wallet-api.postman_collection.json`
+4. A coleção "Wallet API" será adicionada
+
+### Configuração
+
+A coleção usa a variável `{{base_url}}` configurada como `http://localhost` por padrão. Para alterar:
+
+1. Clique na coleção "Wallet API"
+2. Vá na aba **Variables**
+3. Altere o valor de `base_url` conforme necessário
+
+### Endpoints Disponíveis
+
+- **Accounts**
+  - Create Account (POST) - cria usuário ou loja via campo `user_type`
+  - Get Account Balance (GET)
+- **Transfers**
+  - Create Transfer (POST)
+
 ## Regras de Negócio
 
 - **Usuários comuns** podem enviar e receber transferências
@@ -198,8 +234,39 @@ curl -X GET http://localhost/api/users/1/balance
 - **PHP:** 8.4 com Octane/Swoole
 - **Banco de Dados:** PostgreSQL 18
 - **Cache/Filas:** Redis
+- **Queue Dashboard:** Laravel Horizon
 - **Ambiente:** Docker com Laravel Sail
 - **Testes:** Pest PHP
+
+## Laravel Horizon
+
+O projeto utiliza [Laravel Horizon](https://laravel.com/docs/horizon) para gerenciamento e monitoramento de filas Redis.
+
+### Dashboard
+
+O dashboard do Horizon está disponível em:
+
+```
+http://localhost/horizon
+```
+
+### Executar Horizon
+
+Para processar jobs em fila, execute:
+
+```bash
+vendor/bin/sail artisan horizon
+```
+
+### Comandos Úteis
+
+| Comando | Descrição |
+|---------|-----------|
+| `sail artisan horizon` | Inicia o Horizon |
+| `sail artisan horizon:pause` | Pausa o processamento |
+| `sail artisan horizon:continue` | Retoma o processamento |
+| `sail artisan horizon:terminate` | Encerra graciosamente |
+| `sail artisan horizon:status` | Verifica status atual |
 
 ## Testes
 

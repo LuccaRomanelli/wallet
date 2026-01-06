@@ -1,0 +1,257 @@
+{
+	"info": {
+		"_postman_id": "wallet-api-collection",
+		"name": "Wallet API",
+		"description": "API RESTful para transferências de dinheiro entre usuários, similar ao PIX brasileiro.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Accounts",
+			"description": "Endpoints para gerenciamento de contas",
+			"item": [
+				{
+					"name": "Create Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva\",\n    \"email\": \"joao@email.com\",\n    \"password\": \"senha12345\",\n    \"document\": \"12345678901\",\n    \"start_money\": 100.00,\n    \"user_type\": \"common\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts",
+							"host": ["{{base_url}}"],
+							"path": ["api", "accounts"]
+						},
+						"description": "Cria uma nova conta (usuário comum ou loja).\n\n**Campos obrigatórios:**\n- `name`: Nome (string, max 255)\n- `email`: Email único (string, email válido)\n- `password`: Senha (string, min 8 caracteres)\n- `document`: Documento único (string)\n- `user_type`: Tipo de conta (`common` para usuário ou `merchant` para loja)\n\n**Campo opcional:**\n- `start_money`: Saldo inicial (numeric, >= 0, default: 0)\n\n**Observação:** Contas do tipo `merchant` só podem receber transferências, não podem enviar."
+					},
+					"response": [
+						{
+							"name": "Success - User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"João Silva\",\n    \"email\": \"joao@email.com\",\n    \"password\": \"senha12345\",\n    \"document\": \"12345678901\",\n    \"start_money\": 100.00,\n    \"user_type\": \"common\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/accounts",
+									"host": ["{{base_url}}"],
+									"path": ["api", "accounts"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Account created successfully.\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"João Silva\",\n        \"email\": \"joao@email.com\",\n        \"user_type\": \"common\"\n    }\n}"
+						},
+						{
+							"name": "Success - Merchant",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Loja do Pedro\",\n    \"email\": \"loja@email.com\",\n    \"password\": \"senha12345\",\n    \"document\": \"12345678000199\",\n    \"start_money\": 0.00,\n    \"user_type\": \"merchant\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/accounts",
+									"host": ["{{base_url}}"],
+									"path": ["api", "accounts"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Account created successfully.\",\n    \"data\": {\n        \"id\": 2,\n        \"name\": \"Loja do Pedro\",\n        \"email\": \"loja@email.com\",\n        \"user_type\": \"merchant\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Account Balance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/1/balance",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "1", "balance"]
+						},
+						"description": "Consulta o saldo de uma conta.\n\n**Parâmetro de URL:**\n- `id`: ID da conta (integer)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/users/1/balance",
+									"host": ["{{base_url}}"],
+									"path": ["api", "users", "1", "balance"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"João Silva\",\n        \"email\": \"joao@email.com\",\n        \"document\": \"123.456.789-00\",\n        \"user_type\": \"common\",\n        \"balance\": \"100.00\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Transfers",
+			"description": "Endpoints para transferências de dinheiro",
+			"item": [
+				{
+					"name": "Create Transfer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 50.00,\n    \"payer\": 1,\n    \"payee\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transfer",
+							"host": ["{{base_url}}"],
+							"path": ["api", "transfer"]
+						},
+						"description": "Realiza uma transferência entre contas.\n\n**Campos obrigatórios:**\n- `value`: Valor da transferência (numeric, > 0)\n- `payer`: ID do pagador (integer, deve existir)\n- `payee`: ID do beneficiário (integer, deve existir e ser diferente do payer)\n\n**Regras de negócio:**\n- O pagador deve ter saldo suficiente\n- Merchants (lojas) não podem enviar transferências\n- Não é permitido transferir para si mesmo\n- A transferência passa por autorização externa"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"value\": 50.00,\n    \"payer\": 1,\n    \"payee\": 2\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/transfer",
+									"host": ["{{base_url}}"],
+									"path": ["api", "transfer"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Transfer completed successfully.\",\n    \"data\": {\n        \"id\": 1,\n        \"payer_id\": 1,\n        \"payee_id\": 2,\n        \"amount\": \"50.00\",\n        \"status\": \"completed\"\n    }\n}"
+						},
+						{
+							"name": "Insufficient Balance",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"value\": 1000.00,\n    \"payer\": 1,\n    \"payee\": 2\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/transfer",
+									"host": ["{{base_url}}"],
+									"path": ["api", "transfer"]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Insufficient balance.\"\n}"
+						},
+						{
+							"name": "Merchant Cannot Transfer",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"value\": 50.00,\n    \"payer\": 2,\n    \"payee\": 1\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/transfer",
+									"host": ["{{base_url}}"],
+									"path": ["api", "transfer"]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"message\": \"Merchants cannot make transfers.\"\n}"
+						}
+					]
+				}
+			]
+		}
+	]
+}

@@ -33,7 +33,7 @@ class GetUserBalanceController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'document' => $user->document,
+                'document' => (string) $user->document,
                 'user_type' => $user->user_type->value,
                 'balance' => $balance->toDecimal(),
             ],

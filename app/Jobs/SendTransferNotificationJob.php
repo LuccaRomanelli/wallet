@@ -20,7 +20,7 @@ class SendTransferNotificationJob implements ShouldQueue
     public function __construct(
         public Transaction $transaction
     ) {
-        $this->onQueue('notifications');
+        $this->onConnection('redis')->onQueue('notifications');
     }
 
     public function handle(NotificationServiceInterface $notificationService): void
