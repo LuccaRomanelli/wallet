@@ -12,58 +12,65 @@ API RESTful para transferências de dinheiro entre usuários, similar ao PIX bra
 
 ## Requisitos
 
-- PHP 8.4+
-- Composer
-- Docker (recomendado) ou:
-  - PostgreSQL 18
-  - Redis
+- Docker
 
 ## Instalação
 
-### Com Docker (Recomendado)
+### Configuração de Usuário do Sail
 
-```bash
-# Clone o repositório
-git clone <url-do-repositorio>
-cd wallet
+Para evitar problemas de permissão com o Sail, certifique-se de que as variáveis `WWWGROUP` e `WWWUSER` estejam configuradas corretamente executando o comando abaixo:
 
-# Instale as dependências e configure o ambiente
-composer run setup
-
-# Inicie os containers
-./vendor/bin/sail up -d
-
-# Execute as migrações
-./vendor/bin/sail artisan migrate
+```shell
+echo "$(id -u):$(id -g)" # retorna <WWWUSER>:<WWWGROUP>
 ```
 
-### Sem Docker
+Copie o arquivo de exemplo e configure o ambiente:
 
-```bash
-# Clone o repositório
-git clone <url-do-repositorio>
-cd wallet
-
-# Instale as dependências
-composer install
-
-# Configure o ambiente
+```shell
 cp .env.example .env
-php artisan key:generate
+```
 
-# Configure as variáveis de banco de dados no .env
-# DB_CONNECTION=pgsql
-# DB_HOST=127.0.0.1
-# DB_PORT=5432
-# DB_DATABASE=wallet
-# DB_USERNAME=seu_usuario
-# DB_PASSWORD=sua_senha
+Depois atualize o arquivo `.env` conforme o exemplo abaixo:
 
-# Execute as migrações
-php artisan migrate
+```
+WWWGROUP=<WWWGROUP> # resultado de id -g
+WWWUSER=<WWWUSER> # resultado de id -u
+```
 
-# Inicie o servidor
-php artisan serve
+### Instalar dependências
+
+Após isso, execute o seguinte comando para instalar todas as dependências:
+
+```shell
+docker run -it \
+    -u "$(id -u):$(id -g)" \
+    -v ${PWD}/:/var/www/html \
+    -w /var/www/html \
+    composer:lts \
+    composer install --ignore-platform-reqs --no-scripts
+```
+
+### Criar container
+
+Quando terminar, execute o comando abaixo para criar o container Docker do projeto:
+
+```shell
+vendor/bin/sail up --detach --force-recreate laravel.test
+vendor/bin/sail composer run post-autoload-dump
+```
+
+### Executar migrações
+
+```shell
+vendor/bin/sail artisan migrate
+```
+
+## Acessando a API
+
+Após iniciar os containers, a API estará disponível em:
+
+```
+http://localhost
 ```
 
 ## Endpoints da API
@@ -176,11 +183,7 @@ curl -X POST http://localhost/api/transfer \
 ## Testes
 
 ```bash
-# Com Docker
-./vendor/bin/sail test
-
-# Sem Docker
-./vendor/bin/pest
+vendor/bin/sail test
 ```
 
 ## Arquitetura
