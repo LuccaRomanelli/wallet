@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserType;
 use App\Models\User;
+use App\ValueObjects\Identification\CNPJ;
+use App\ValueObjects\Identification\CPF;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,11 +18,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        for ($i = 0; $i < 5; $i++) {
+            User::factory()->create([
+                'name' => fake()->name(),
+                'email' => fake()->unique()->safeEmail(),
+                'document' => CPF::generate()->getValue(),
+                'user_type' => UserType::Common,
+            ]);
+        }
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        for ($i = 0; $i < 3; $i++) {
+            User::factory()->create([
+                'name' => fake()->company(),
+                'email' => fake()->unique()->companyEmail(),
+                'document' => CNPJ::generate()->getValue(),
+                'user_type' => UserType::Merchant,
+            ]);
+        }
     }
 }
