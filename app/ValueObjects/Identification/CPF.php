@@ -56,4 +56,29 @@ class CPF
 
         return intval($cpf[$position]) === $remainder;
     }
+
+    public static function generate(): self
+    {
+        $digits = '';
+        for ($i = 0; $i < 9; $i++) {
+            $digits .= mt_rand(0, 9);
+        }
+
+        $digits .= self::calculateCheckDigit($digits, 10);
+        $digits .= self::calculateCheckDigit($digits, 11);
+
+        return new self($digits);
+    }
+
+    private static function calculateCheckDigit(string $base, int $factor): int
+    {
+        $sum = 0;
+        for ($i = 0; $i < strlen($base); $i++) {
+            $sum += intval($base[$i]) * ($factor - $i);
+        }
+
+        $remainder = ($sum * 10) % 11;
+
+        return $remainder >= 10 ? 0 : $remainder;
+    }
 }
