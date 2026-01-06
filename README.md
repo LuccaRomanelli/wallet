@@ -1,59 +1,194 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Wallet API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API RESTful para transferências de dinheiro entre usuários, similar ao PIX brasileiro.
 
-## About Laravel
+## Funcionalidades
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Criação de usuários comuns e lojas (merchants)
+- Transferências de dinheiro entre usuários
+- Validação de saldo em tempo real
+- Autorização externa de transferências
+- Notificações assíncronas para beneficiários
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requisitos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.4+
+- Composer
+- Docker (recomendado) ou:
+  - PostgreSQL 18
+  - Redis
 
-## Learning Laravel
+## Instalação
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Com Docker (Recomendado)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+# Clone o repositório
+git clone <url-do-repositorio>
+cd wallet
 
-## Laravel Sponsors
+# Instale as dependências e configure o ambiente
+composer run setup
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Inicie os containers
+./vendor/bin/sail up -d
 
-### Premium Partners
+# Execute as migrações
+./vendor/bin/sail artisan migrate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Sem Docker
 
-## Contributing
+```bash
+# Clone o repositório
+git clone <url-do-repositorio>
+cd wallet
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Instale as dependências
+composer install
 
-## Code of Conduct
+# Configure o ambiente
+cp .env.example .env
+php artisan key:generate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Configure as variáveis de banco de dados no .env
+# DB_CONNECTION=pgsql
+# DB_HOST=127.0.0.1
+# DB_PORT=5432
+# DB_DATABASE=wallet
+# DB_USERNAME=seu_usuario
+# DB_PASSWORD=sua_senha
 
-## Security Vulnerabilities
+# Execute as migrações
+php artisan migrate
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Inicie o servidor
+php artisan serve
+```
 
-## License
+## Endpoints da API
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Método | Endpoint         | Descrição               |
+|--------|------------------|-------------------------|
+| POST   | `/api/users`     | Criar usuário comum     |
+| POST   | `/api/stores`    | Criar loja (merchant)   |
+| POST   | `/api/transfer`  | Realizar transferência  |
+
+## Exemplos de Uso
+
+### Criar Usuário
+
+```bash
+curl -X POST http://localhost/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "password": "senha12345",
+    "document": "12345678901",
+    "start_money": 100.00
+  }'
+```
+
+**Resposta:**
+```json
+{
+  "id": 1,
+  "name": "João Silva",
+  "email": "joao@email.com"
+}
+```
+
+### Criar Loja (Merchant)
+
+```bash
+curl -X POST http://localhost/api/stores \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Loja do Pedro",
+    "email": "loja@email.com",
+    "password": "senha12345",
+    "document": "12345678000199",
+    "start_money": 0.00
+  }'
+```
+
+**Resposta:**
+```json
+{
+  "id": 2,
+  "name": "Loja do Pedro",
+  "email": "loja@email.com"
+}
+```
+
+### Realizar Transferência
+
+```bash
+curl -X POST http://localhost/api/transfer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "value": 50.00,
+    "payer": 1,
+    "payee": 2
+  }'
+```
+
+**Resposta:**
+```json
+{
+  "id": 1,
+  "payer_id": 1,
+  "payee_id": 2,
+  "amount": "50.00",
+  "status": "completed"
+}
+```
+
+## Regras de Negócio
+
+- **Usuários comuns** podem enviar e receber transferências
+- **Merchants (lojas)** só podem receber transferências, não podem enviar
+- Todas as transferências passam por um serviço de autorização externo
+- O saldo deve ser suficiente para realizar a transferência
+- Não é permitido transferir para si mesmo
+- Notificações são enviadas de forma assíncrona para o beneficiário
+
+## Códigos de Erro
+
+| Código | Descrição                                    |
+|--------|----------------------------------------------|
+| 201    | Sucesso                                      |
+| 403    | Merchant tentando enviar / Self-transfer     |
+| 404    | Usuário não encontrado                       |
+| 422    | Saldo insuficiente / Validação falhou        |
+| 503    | Serviço de autorização indisponível/negado   |
+
+## Stack Tecnológica
+
+- **Framework:** Laravel 12
+- **PHP:** 8.4 com Octane/Swoole
+- **Banco de Dados:** PostgreSQL 18
+- **Cache/Filas:** Redis
+- **Ambiente:** Docker com Laravel Sail
+- **Testes:** Pest PHP
+
+## Testes
+
+```bash
+# Com Docker
+./vendor/bin/sail test
+
+# Sem Docker
+./vendor/bin/pest
+```
+
+## Arquitetura
+
+O projeto segue uma arquitetura em camadas:
+
+- **Controllers:** Recebem requisições e delegam para services
+- **Services:** Contêm a lógica de negócio
+- **Repositories:** Abstraem o acesso aos dados
+- **Value Objects:** Encapsulam valores (Money, Document)
+- **Enums:** Definem tipos (UserType, TransactionStatus)
