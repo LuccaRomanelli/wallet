@@ -158,15 +158,14 @@ test('self transfer is rejected', function () {
 });
 
 test('transfer fails when authorization is denied', function () {
-    Http::fake([
-        'https://util.devi.tools/api/v2/authorize' => Http::response([
-            'status' => 'fail',
-            'data' => ['authorization' => false],
-        ], 200),
-    ]);
-
     $payer = User::factory()->common()->create(['start_money' => 100000]);
     $payee = User::factory()->common()->create(['start_money' => 0]);
+
+    $authService = Mockery::mock(\App\Services\Contracts\AuthorizationServiceInterface::class);
+    $authService->shouldReceive('authorize')
+        ->andThrow(new \App\Exceptions\Transfer\TransferAuthorizationException('Transfer not authorized.'));
+
+    $this->app->instance(\App\Services\Contracts\AuthorizationServiceInterface::class, $authService);
 
     $response = $this->postJson('/api/transfer', [
         'value' => 100.00,
@@ -183,15 +182,19 @@ test('transfer fails when authorization is denied', function () {
         'payer_id' => $payer->id,
         'payee_id' => $payee->id,
     ]);
+
+    Mockery::close();
 });
 
 test('transfer fails when authorization service is unavailable', function () {
-    Http::fake([
-        'https://util.devi.tools/api/v2/authorize' => Http::response([], 500),
-    ]);
-
     $payer = User::factory()->common()->create(['start_money' => 100000]);
     $payee = User::factory()->common()->create(['start_money' => 0]);
+
+    $authService = Mockery::mock(\App\Services\Contracts\AuthorizationServiceInterface::class);
+    $authService->shouldReceive('authorize')
+        ->andThrow(new \App\Exceptions\Transfer\TransferAuthorizationException('Authorization service unavailable.'));
+
+    $this->app->instance(\App\Services\Contracts\AuthorizationServiceInterface::class, $authService);
 
     $response = $this->postJson('/api/transfer', [
         'value' => 100.00,
@@ -203,6 +206,8 @@ test('transfer fails when authorization service is unavailable', function () {
         ->assertJson([
             'message' => 'Authorization service unavailable.',
         ]);
+
+    Mockery::close();
 });
 
 test('validation fails for missing value', function () {

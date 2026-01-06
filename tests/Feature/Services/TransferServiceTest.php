@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserType;
 use App\Exceptions\Transfer\InsufficientBalanceException;
 use App\Exceptions\Transfer\MerchantCannotTransferException;
 use App\Exceptions\Transfer\SelfTransferException;
@@ -20,16 +19,6 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Queue::fake();
-
-    $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
-    $this->walletBalanceService = Mockery::mock(WalletBalanceService::class);
-    $this->authorizationService = Mockery::mock(AuthorizationServiceInterface::class);
-
-    $this->service = new TransferService(
-        $this->userRepository,
-        $this->walletBalanceService,
-        $this->authorizationService
-    );
 });
 
 afterEach(function () {
@@ -37,69 +26,119 @@ afterEach(function () {
 });
 
 test('throws UserNotFoundException when payer not found', function () {
-    $this->userRepository->shouldReceive('find')
+    $userRepository = Mockery::mock(UserRepositoryInterface::class);
+    $walletBalanceService = Mockery::mock(WalletBalanceService::class);
+    $authorizationService = Mockery::mock(AuthorizationServiceInterface::class);
+
+    $userRepository->shouldReceive('find')
         ->with(1)
         ->andReturn(null);
 
-    $this->service->transfer(1, 2, new Money(10000));
+    $service = new TransferService(
+        $userRepository,
+        $walletBalanceService,
+        $authorizationService
+    );
+
+    $service->transfer(1, 2, new Money(10000));
 })->throws(UserNotFoundException::class, 'User not found: payer');
 
 test('throws UserNotFoundException when payee not found', function () {
-    $payer = User::factory()->common()->make(['id' => 1]);
+    $payer = User::factory()->common()->create(['id' => 1]);
 
-    $this->userRepository->shouldReceive('find')
+    $userRepository = Mockery::mock(UserRepositoryInterface::class);
+    $walletBalanceService = Mockery::mock(WalletBalanceService::class);
+    $authorizationService = Mockery::mock(AuthorizationServiceInterface::class);
+
+    $userRepository->shouldReceive('find')
         ->with(1)
         ->andReturn($payer);
 
-    $this->userRepository->shouldReceive('find')
+    $userRepository->shouldReceive('find')
         ->with(2)
         ->andReturn(null);
 
-    $this->service->transfer(1, 2, new Money(10000));
+    $service = new TransferService(
+        $userRepository,
+        $walletBalanceService,
+        $authorizationService
+    );
+
+    $service->transfer(1, 2, new Money(10000));
 })->throws(UserNotFoundException::class, 'User not found: payee');
 
 test('throws SelfTransferException when payer and payee are the same', function () {
-    $user = User::factory()->common()->make(['id' => 1]);
+    $user = User::factory()->common()->create(['id' => 1]);
 
-    $this->userRepository->shouldReceive('find')
+    $userRepository = Mockery::mock(UserRepositoryInterface::class);
+    $walletBalanceService = Mockery::mock(WalletBalanceService::class);
+    $authorizationService = Mockery::mock(AuthorizationServiceInterface::class);
+
+    $userRepository->shouldReceive('find')
         ->with(1)
         ->andReturn($user);
 
-    $this->service->transfer(1, 1, new Money(10000));
+    $service = new TransferService(
+        $userRepository,
+        $walletBalanceService,
+        $authorizationService
+    );
+
+    $service->transfer(1, 1, new Money(10000));
 })->throws(SelfTransferException::class, 'Cannot transfer to yourself.');
 
 test('throws MerchantCannotTransferException when payer is merchant', function () {
-    $payer = User::factory()->merchant()->make(['id' => 1]);
-    $payee = User::factory()->common()->make(['id' => 2]);
+    $payer = User::factory()->merchant()->create(['id' => 1]);
+    $payee = User::factory()->common()->create(['id' => 2]);
 
-    $this->userRepository->shouldReceive('find')
+    $userRepository = Mockery::mock(UserRepositoryInterface::class);
+    $walletBalanceService = Mockery::mock(WalletBalanceService::class);
+    $authorizationService = Mockery::mock(AuthorizationServiceInterface::class);
+
+    $userRepository->shouldReceive('find')
         ->with(1)
         ->andReturn($payer);
 
-    $this->userRepository->shouldReceive('find')
+    $userRepository->shouldReceive('find')
         ->with(2)
         ->andReturn($payee);
 
-    $this->service->transfer(1, 2, new Money(10000));
+    $service = new TransferService(
+        $userRepository,
+        $walletBalanceService,
+        $authorizationService
+    );
+
+    $service->transfer(1, 2, new Money(10000));
 })->throws(MerchantCannotTransferException::class, 'Merchants are not allowed to send transfers.');
 
 test('throws InsufficientBalanceException when balance is not enough', function () {
-    $payer = User::factory()->common()->make(['id' => 1]);
-    $payee = User::factory()->common()->make(['id' => 2]);
+    $payer = User::factory()->common()->create(['id' => 1]);
+    $payee = User::factory()->common()->create(['id' => 2]);
 
-    $this->userRepository->shouldReceive('find')
+    $userRepository = Mockery::mock(UserRepositoryInterface::class);
+    $walletBalanceService = Mockery::mock(WalletBalanceService::class);
+    $authorizationService = Mockery::mock(AuthorizationServiceInterface::class);
+
+    $userRepository->shouldReceive('find')
         ->with(1)
         ->andReturn($payer);
 
-    $this->userRepository->shouldReceive('find')
+    $userRepository->shouldReceive('find')
         ->with(2)
         ->andReturn($payee);
 
-    $this->walletBalanceService->shouldReceive('hasSufficientBalance')
+    $walletBalanceService->shouldReceive('hasSufficientBalance')
         ->with(1, Mockery::type(Money::class))
         ->andReturn(false);
 
-    $this->service->transfer(1, 2, new Money(10000));
+    $service = new TransferService(
+        $userRepository,
+        $walletBalanceService,
+        $authorizationService
+    );
+
+    $service->transfer(1, 2, new Money(10000));
 })->throws(InsufficientBalanceException::class, 'Insufficient balance to complete the transfer.');
 
 test('throws TransferAuthorizationException when authorization fails', function () {
