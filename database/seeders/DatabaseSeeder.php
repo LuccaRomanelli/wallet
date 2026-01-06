@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use App\Enums\UserType;
 use App\Models\User;
-use App\ValueObjects\Cnpj;
-use App\ValueObjects\Cpf;
+use App\ValueObjects\Identification\CNPJ;
+use App\ValueObjects\Identification\CPF;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             User::factory()->create([
                 'name' => fake()->name(),
                 'email' => fake()->unique()->safeEmail(),
-                'document' => Cpf::generate()->value(),
+                'document' => CPF::generate()->getValue(),
                 'user_type' => UserType::Common,
             ]);
         }
@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             User::factory()->create([
                 'name' => fake()->company(),
                 'email' => fake()->unique()->companyEmail(),
-                'document' => Cnpj::generate()->value(),
+                'document' => CNPJ::generate()->getValue(),
                 'user_type' => UserType::Merchant,
             ]);
         }

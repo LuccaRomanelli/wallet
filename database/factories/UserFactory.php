@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\UserType;
-use App\ValueObjects\Cnpj;
-use App\ValueObjects\Cpf;
+use App\ValueObjects\Identification\CNPJ;
+use App\ValueObjects\Identification\CPF;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
@@ -29,7 +29,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
-            'document' => Cpf::generate()->value(),
+            'document' => CPF::generate()->getValue(),
             'user_type' => UserType::Common,
         ];
     }
@@ -37,7 +37,7 @@ class UserFactory extends Factory
     public function common(): static
     {
         return $this->state(fn (array $attributes) => [
-            'document' => Cpf::generate()->value(),
+            'document' => CPF::generate()->getValue(),
             'user_type' => UserType::Common,
         ]);
     }
@@ -46,7 +46,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'name' => fake()->company(),
-            'document' => Cnpj::generate()->value(),
+            'document' => CNPJ::generate()->getValue(),
             'user_type' => UserType::Merchant,
         ]);
     }
