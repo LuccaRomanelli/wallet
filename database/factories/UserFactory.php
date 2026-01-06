@@ -31,6 +31,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'document' => CPF::generate()->getValue(),
             'user_type' => UserType::Common,
+            'start_money' => 0,
         ];
     }
 

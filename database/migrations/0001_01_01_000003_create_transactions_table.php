@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('payer_id')->constrained('users');
             $table->foreignId('payee_id')->constrained('users');
-            $table->string('amount');
+            $table->integer('amount');
             $table->enum('status', ['completed', 'failed']);
             $table->json('authorization_response')->nullable();
             $table->timestamps();

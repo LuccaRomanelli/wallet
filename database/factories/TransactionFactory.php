@@ -21,7 +21,7 @@ class TransactionFactory extends Factory
         return [
             'payer_id' => User::factory(),
             'payee_id' => User::factory(),
-            'amount' => fake()->randomFloat(2, 10, 1000),
+            'amount' => fake()->numberBetween(1000, 100000),
             'status' => TransactionStatus::Completed,
             'authorization_response' => null,
         ];
