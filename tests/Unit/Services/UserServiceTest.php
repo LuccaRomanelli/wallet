@@ -15,7 +15,7 @@ afterEach(function () {
     Mockery::close();
 });
 
-test('createUser calls repository with common user type', function () {
+test('createAccount calls repository with common user type', function () {
     $expectedUser = Mockery::mock(User::class);
 
     $this->userRepository->shouldReceive('create')
@@ -30,18 +30,19 @@ test('createUser calls repository with common user type', function () {
         )
         ->andReturn($expectedUser);
 
-    $user = $this->service->createUser(
+    $user = $this->service->createAccount(
         name: 'John Doe',
         email: 'john@example.com',
         password: 'password123',
         document: '52998224725',
+        userType: UserType::Common,
         startMoney: Money::fromDecimal(100)
     );
 
     expect($user)->toBe($expectedUser);
 });
 
-test('createStore calls repository with merchant user type', function () {
+test('createAccount calls repository with merchant user type', function () {
     $expectedStore = Mockery::mock(User::class);
 
     $this->userRepository->shouldReceive('create')
@@ -56,18 +57,19 @@ test('createStore calls repository with merchant user type', function () {
         )
         ->andReturn($expectedStore);
 
-    $store = $this->service->createStore(
+    $store = $this->service->createAccount(
         name: 'My Store',
         email: 'store@example.com',
         password: 'password123',
         document: '11222333000181',
+        userType: UserType::Merchant,
         startMoney: Money::fromDecimal(500)
     );
 
     expect($store)->toBe($expectedStore);
 });
 
-test('createUser passes correct start money to repository', function () {
+test('createAccount passes correct start money to repository', function () {
     $expectedUser = Mockery::mock(User::class);
 
     $this->userRepository->shouldReceive('create')
@@ -77,35 +79,17 @@ test('createUser passes correct start money to repository', function () {
         })
         ->andReturn($expectedUser);
 
-    $this->service->createUser(
+    $this->service->createAccount(
         name: 'John Doe',
         email: 'john@example.com',
         password: 'password123',
         document: '52998224725',
+        userType: UserType::Common,
         startMoney: Money::fromDecimal(100)
     );
 });
 
-test('createStore passes correct start money to repository', function () {
-    $expectedStore = Mockery::mock(User::class);
-
-    $this->userRepository->shouldReceive('create')
-        ->once()
-        ->withArgs(function ($name, $email, $password, $document, $userType, $startMoney) {
-            return $startMoney->getCents() === 50000;
-        })
-        ->andReturn($expectedStore);
-
-    $this->service->createStore(
-        name: 'My Store',
-        email: 'store@example.com',
-        password: 'password123',
-        document: '11222333000181',
-        startMoney: Money::fromDecimal(500)
-    );
-});
-
-test('createUser passes zero start money when provided', function () {
+test('createAccount passes zero start money when provided', function () {
     $expectedUser = Mockery::mock(User::class);
 
     $this->userRepository->shouldReceive('create')
@@ -115,30 +99,12 @@ test('createUser passes zero start money when provided', function () {
         })
         ->andReturn($expectedUser);
 
-    $this->service->createUser(
+    $this->service->createAccount(
         name: 'John Doe',
         email: 'john@example.com',
         password: 'password123',
         document: '52998224725',
-        startMoney: Money::zero()
-    );
-});
-
-test('createStore passes zero start money when provided', function () {
-    $expectedStore = Mockery::mock(User::class);
-
-    $this->userRepository->shouldReceive('create')
-        ->once()
-        ->withArgs(function ($name, $email, $password, $document, $userType, $startMoney) {
-            return $startMoney->getCents() === 0;
-        })
-        ->andReturn($expectedStore);
-
-    $this->service->createStore(
-        name: 'My Store',
-        email: 'store@example.com',
-        password: 'password123',
-        document: '11222333000181',
+        userType: UserType::Common,
         startMoney: Money::zero()
     );
 });

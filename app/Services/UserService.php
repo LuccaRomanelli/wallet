@@ -15,11 +15,12 @@ class UserService
         private UserRepositoryInterface $userRepository
     ) {}
 
-    public function createUser(
+    public function createAccount(
         string $name,
         string $email,
         string $password,
         string $document,
+        UserType $userType,
         Money $startMoney
     ): User {
         return $this->userRepository->create(
@@ -27,24 +28,7 @@ class UserService
             email: $email,
             password: $password,
             document: $document,
-            userType: UserType::Common,
-            startMoney: $startMoney
-        );
-    }
-
-    public function createStore(
-        string $name,
-        string $email,
-        string $password,
-        string $document,
-        Money $startMoney
-    ): User {
-        return $this->userRepository->create(
-            name: $name,
-            email: $email,
-            password: $password,
-            document: $document,
-            userType: UserType::Merchant,
+            userType: $userType,
             startMoney: $startMoney
         );
     }
