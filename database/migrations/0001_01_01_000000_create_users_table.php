@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('document')->unique();
             $table->enum('user_type', ['common', 'merchant']);
+            $table->integer('start_money')->default(0);
             $table->timestamps();
         });
 
