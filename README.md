@@ -75,11 +75,12 @@ http://localhost
 
 ## Endpoints da API
 
-| Método | Endpoint         | Descrição               |
-|--------|------------------|-------------------------|
-| POST   | `/api/users`     | Criar usuário comum     |
-| POST   | `/api/stores`    | Criar loja (merchant)   |
-| POST   | `/api/transfer`  | Realizar transferência  |
+| Método | Endpoint                  | Descrição                  |
+|--------|---------------------------|----------------------------|
+| POST   | `/api/users`              | Criar usuário comum        |
+| POST   | `/api/stores`             | Criar loja (merchant)      |
+| POST   | `/api/transfer`           | Realizar transferência     |
+| GET    | `/api/users/{id}/balance` | Consultar saldo do usuário |
 
 ## Exemplos de Uso
 
@@ -149,6 +150,26 @@ curl -X POST http://localhost/api/transfer \
   "payee_id": 2,
   "amount": "50.00",
   "status": "completed"
+}
+```
+
+### Consultar Saldo do Usuário
+
+```bash
+curl -X GET http://localhost/api/users/1/balance
+```
+
+**Resposta:**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "document": "123.456.789-00",
+    "user_type": "common",
+    "balance": "50.00"
+  }
 }
 ```
 
