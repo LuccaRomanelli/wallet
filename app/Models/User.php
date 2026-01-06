@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\DocumentCast;
+use App\Casts\MoneyCast;
 use App\Enums\UserType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +24,7 @@ class User extends Authenticatable
         'password',
         'document',
         'user_type',
+        'start_money',
     ];
 
     /**
@@ -41,6 +43,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'user_type' => UserType::class,
             'document' => DocumentCast::class,
+            'start_money' => MoneyCast::class,
         ];
     }
 

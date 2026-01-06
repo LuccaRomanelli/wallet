@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\TransactionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +32,7 @@ class Transaction extends Model
         return [
             'status' => TransactionStatus::class,
             'authorization_response' => 'array',
+            'amount' => MoneyCast::class,
         ];
     }
 
