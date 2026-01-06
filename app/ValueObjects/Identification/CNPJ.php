@@ -57,4 +57,33 @@ class CNPJ
 
         return intval($cnpj[$position]) === $remainder;
     }
+
+    public static function generate(): self
+    {
+        $digits = '';
+        for ($i = 0; $i < 8; $i++) {
+            $digits .= mt_rand(0, 9);
+        }
+        $digits .= '0001';
+
+        $digits .= self::calculateCheckDigit($digits, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+        $digits .= self::calculateCheckDigit($digits, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+
+        return new self($digits);
+    }
+
+    /**
+     * @param array<int> $weights
+     */
+    private static function calculateCheckDigit(string $base, array $weights): int
+    {
+        $sum = 0;
+        for ($i = 0; $i < strlen($base); $i++) {
+            $sum += intval($base[$i]) * $weights[$i];
+        }
+
+        $remainder = $sum % 11;
+
+        return $remainder < 2 ? 0 : 11 - $remainder;
+    }
 }

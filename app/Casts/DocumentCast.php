@@ -2,14 +2,14 @@
 
 namespace App\Casts;
 
-use App\ValueObjects\Cnpj;
-use App\ValueObjects\Cpf;
+use App\ValueObjects\Identification\CNPJ;
+use App\ValueObjects\Identification\CPF;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 
 /**
- * @implements CastsAttributes<Cpf|Cnpj, string>
+ * @implements CastsAttributes<CPF|CNPJ, string>
  */
 class DocumentCast implements CastsAttributes
 {
@@ -19,7 +19,7 @@ class DocumentCast implements CastsAttributes
      * @param mixed $value
      * @param array<string, mixed> $attributes
      */
-    public function get(Model $model, string $key, mixed $value, array $attributes): Cpf|Cnpj|null
+    public function get(Model $model, string $key, mixed $value, array $attributes): CPF|CNPJ|null
     {
         if ($value === null) {
             return null;
@@ -28,8 +28,8 @@ class DocumentCast implements CastsAttributes
         $cleaned = preg_replace('/\D/', '', $value);
 
         return match (strlen($cleaned)) {
-            11 => new Cpf($cleaned),
-            14 => new Cnpj($cleaned),
+            11 => new CPF($cleaned),
+            14 => new CNPJ($cleaned),
             default => throw new InvalidArgumentException('Document must be a valid CPF (11 digits) or CNPJ (14 digits)'),
         };
     }
@@ -46,15 +46,15 @@ class DocumentCast implements CastsAttributes
             return null;
         }
 
-        if ($value instanceof Cpf || $value instanceof Cnpj) {
-            return $value->value();
+        if ($value instanceof CPF || $value instanceof CNPJ) {
+            return $value->getValue();
         }
 
         $cleaned = preg_replace('/\D/', '', $value);
 
         return match (strlen($cleaned)) {
-            11 => (new Cpf($cleaned))->value(),
-            14 => (new Cnpj($cleaned))->value(),
+            11 => (new CPF($cleaned))->getValue(),
+            14 => (new CNPJ($cleaned))->getValue(),
             default => throw new InvalidArgumentException('Document must be a valid CPF (11 digits) or CNPJ (14 digits)'),
         };
     }
