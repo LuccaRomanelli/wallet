@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'external_authorization' => [
+        'url' => env('EXTERNAL_AUTHORIZATION_URL', 'https://util.devi.tools/api/v2/authorize'),
+        'timeout' => env('EXTERNAL_AUTHORIZATION_TIMEOUT', 5),
+    ],
+
+    'external_notification' => [
+        'url' => env('EXTERNAL_NOTIFICATION_URL', 'https://util.devi.tools/api/v1/notify'),
+        'timeout' => env('EXTERNAL_NOTIFICATION_TIMEOUT', 5),
+    ],
+
 ];
