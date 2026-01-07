@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTOs\UserDTO;
 use App\Enums\UserType;
-use App\Models\User;
 use App\ValueObjects\Money\Money;
 
 interface UserRepositoryInterface
 {
-    public function find(int $id): ?User;
+    public function find(int $id): ?UserDTO;
+
+    public function findWithLock(int $id): ?UserDTO;
 
     public function getStartMoney(int $userId): Money;
 
@@ -21,5 +23,5 @@ interface UserRepositoryInterface
         string $document,
         UserType $userType,
         Money $startMoney
-    ): User;
+    ): UserDTO;
 }

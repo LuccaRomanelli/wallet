@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
 
+use App\DTOs\UserDTO;
 use App\Enums\UserType;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -11,9 +12,18 @@ use App\ValueObjects\Money\Money;
 
 class UserRepository implements UserRepositoryInterface
 {
-    public function find(int $id): ?User
+    public function find(int $id): ?UserDTO
     {
-        return User::find($id);
+        $user = User::find($id);
+
+        return $user ? $this->toDTO($user) : null;
+    }
+
+    public function findWithLock(int $id): ?UserDTO
+    {
+        $user = User::where('id', $id)->lockForUpdate()->first();
+
+        return $user ? $this->toDTO($user) : null;
     }
 
     public function getStartMoney(int $userId): Money
@@ -30,8 +40,8 @@ class UserRepository implements UserRepositoryInterface
         string $document,
         UserType $userType,
         Money $startMoney
-    ): User {
-        return User::create([
+    ): UserDTO {
+        $user = User::create([
             'name' => $name,
             'email' => $email,
             'password' => $password,
@@ -39,5 +49,19 @@ class UserRepository implements UserRepositoryInterface
             'user_type' => $userType,
             'start_money' => $startMoney->getCents(),
         ]);
+
+        return $this->toDTO($user);
+    }
+
+    private function toDTO(User $user): UserDTO
+    {
+        return new UserDTO(
+            id: $user->id,
+            name: $user->name,
+            email: $user->email,
+            document: $user->document,
+            userType: $user->user_type,
+            startMoney: $user->start_money ?? Money::zero(),
+        );
     }
 }

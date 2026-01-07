@@ -1,9 +1,10 @@
 <?php
 
+use App\DTOs\UserDTO;
 use App\Enums\UserType;
-use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\UserService;
+use App\ValueObjects\Identification\CPF;
 use App\ValueObjects\Money\Money;
 
 beforeEach(function () {
@@ -16,7 +17,14 @@ afterEach(function () {
 });
 
 test('createAccount calls repository with common user type', function () {
-    $expectedUser = Mockery::mock(User::class);
+    $expectedUser = new UserDTO(
+        id: 1,
+        name: 'John Doe',
+        email: 'john@example.com',
+        document: new CPF('52998224725'),
+        userType: UserType::Common,
+        startMoney: Money::fromDecimal(100)
+    );
 
     $this->userRepository->shouldReceive('create')
         ->once()
@@ -43,7 +51,14 @@ test('createAccount calls repository with common user type', function () {
 });
 
 test('createAccount calls repository with merchant user type', function () {
-    $expectedStore = Mockery::mock(User::class);
+    $expectedStore = new UserDTO(
+        id: 1,
+        name: 'My Store',
+        email: 'store@example.com',
+        document: new CPF('52998224725'),
+        userType: UserType::Merchant,
+        startMoney: Money::fromDecimal(500)
+    );
 
     $this->userRepository->shouldReceive('create')
         ->once()
@@ -70,7 +85,14 @@ test('createAccount calls repository with merchant user type', function () {
 });
 
 test('createAccount passes correct start money to repository', function () {
-    $expectedUser = Mockery::mock(User::class);
+    $expectedUser = new UserDTO(
+        id: 1,
+        name: 'John Doe',
+        email: 'john@example.com',
+        document: new CPF('52998224725'),
+        userType: UserType::Common,
+        startMoney: Money::fromDecimal(100)
+    );
 
     $this->userRepository->shouldReceive('create')
         ->once()
@@ -90,7 +112,14 @@ test('createAccount passes correct start money to repository', function () {
 });
 
 test('createAccount passes zero start money when provided', function () {
-    $expectedUser = Mockery::mock(User::class);
+    $expectedUser = new UserDTO(
+        id: 1,
+        name: 'John Doe',
+        email: 'john@example.com',
+        document: new CPF('52998224725'),
+        userType: UserType::Common,
+        startMoney: Money::zero()
+    );
 
     $this->userRepository->shouldReceive('create')
         ->once()
