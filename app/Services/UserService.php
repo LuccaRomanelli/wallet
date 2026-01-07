@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\UserDTO;
 use App\Enums\UserType;
-use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\ValueObjects\Money\Money;
 
@@ -22,7 +22,7 @@ class UserService
         string $document,
         UserType $userType,
         Money $startMoney
-    ): User {
+    ): UserDTO {
         return $this->userRepository->create(
             name: $name,
             email: $email,

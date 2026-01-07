@@ -98,17 +98,21 @@ test('getBalance caches the result', function () {
     $this->service->getBalance($user->id);
 });
 
-test('invalidateCache removes cached balance', function () {
-    $user = User::factory()->create(['start_money' => 10000]);
+test('invalidateCacheForUsers removes cached balance for multiple users', function () {
+    $user1 = User::factory()->create(['start_money' => 10000]);
+    $user2 = User::factory()->create(['start_money' => 20000]);
 
     Cache::shouldReceive('forget')
         ->once()
-        ->with("wallet_balance:user:{$user->id}")
+        ->with("wallet_balance:user:{$user1->id}")
         ->andReturn(true);
 
-    $result = $this->service->invalidateCache($user->id);
+    Cache::shouldReceive('forget')
+        ->once()
+        ->with("wallet_balance:user:{$user2->id}")
+        ->andReturn(true);
 
-    expect($result)->toBeTrue();
+    $this->service->invalidateCacheForUsers($user1->id, $user2->id);
 });
 
 test('hasSufficientBalance returns true when balance is sufficient', function () {
@@ -125,10 +129,4 @@ test('hasSufficientBalance returns false when balance is insufficient', function
     $result = $this->service->hasSufficientBalance($user->id, new Money(15000));
 
     expect($result)->toBeFalse();
-});
-
-test('getCacheKey returns correct format', function () {
-    $key = $this->service->getCacheKey(123);
-
-    expect($key)->toBe('wallet_balance:user:123');
 });

@@ -39,7 +39,7 @@ class StoreAccountController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'document' => (string) $user->document,
-                'user_type' => $user->user_type->value,
+                'user_type' => $user->userType->value,
             ],
         ], Response::HTTP_CREATED);
     }

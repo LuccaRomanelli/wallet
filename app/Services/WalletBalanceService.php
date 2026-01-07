@@ -8,6 +8,7 @@ use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\ValueObjects\Money\Money;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Concurrency;
 
 class WalletBalanceService
 {
@@ -30,16 +31,13 @@ class WalletBalanceService
 
     public function calculateBalance(int $userId): Money
     {
-        $startMoney = $this->userRepository->getStartMoney($userId);
-        $received = $this->transactionRepository->sumCompletedReceivedByUser($userId);
-        $sent = $this->transactionRepository->sumCompletedSentByUser($userId);
+        [$startMoney, $received, $sent] = Concurrency::run([
+            fn () => $this->userRepository->getStartMoney($userId),
+            fn () => $this->transactionRepository->sumCompletedReceivedByUser($userId),
+            fn () => $this->transactionRepository->sumCompletedSentByUser($userId),
+        ]);
 
         return $startMoney->add($received)->subtract($sent);
-    }
-
-    public function invalidateCache(int $userId): bool
-    {
-        return Cache::forget($this->getCacheKey($userId));
     }
 
     public function invalidateCacheForUsers(int ...$userIds): void
@@ -49,11 +47,6 @@ class WalletBalanceService
         }
     }
 
-    public function getCacheKey(int $userId): string
-    {
-        return self::CACHE_KEY_PREFIX . $userId;
-    }
-
     public function hasSufficientBalance(int $userId, Money $amount): bool
     {
         $balance = $this->getBalance($userId);
@@ -61,10 +54,13 @@ class WalletBalanceService
         return $balance->isGreaterThanOrEqual($amount);
     }
 
-    public function refreshCache(int $userId): Money
+    private function invalidateCache(int $userId): bool
     {
-        $this->invalidateCache($userId);
+        return Cache::forget($this->getCacheKey($userId));
+    }
 
-        return $this->getBalance($userId);
+    private function getCacheKey(int $userId): string
+    {
+        return self::CACHE_KEY_PREFIX . $userId;
     }
 }
